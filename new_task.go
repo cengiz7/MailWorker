@@ -12,7 +12,7 @@ log.Fatalf("%s: %s", msg, err)
 }
 
 var deneme = []string{
-	"low","low","high","low","medium","low","low","high","high","medium",
+	"low","low","high","low","medium","low","low","high","1530192453","medium",
 	"low"}
 var deneme1 = []uint8 {
 	0,0,2,0,1,0,0,2,2,1,0}
@@ -39,28 +39,52 @@ func main() {
 		args,           // arguments
 	)
 
+	/*q, err := ch.QueueDeclare(
+		"time_queue", // name
+		true,         // durable
+		false,        // delete when unused
+		false,        // exclusive
+		false,        // no-wait
+		nil,          // arguments
+	)
 	failOnError(err, "Failed to declare a queue")
-
+	*/
 	// for testing !!!!!
 	body :=""
 	for k := 0; k<50 ;k++{
 		for i:=0;i<11;i++{
-			body = deneme[i]
-			err = ch.Publish(
-				"json_direct",     // exchange
-				"priority", // routing key
-				false,  // mandatory
-				false,  // immediate
-				amqp.Publishing{
-					Headers:         amqp.Table{},
-					ContentType:     "text/plain",
-					ContentEncoding: "",
-					Body:            []byte(body),
-					DeliveryMode:    amqp.Transient, // 1=non-persistent, 2=persistent
-					Priority:        deneme1[i],
-				})
-			//log.Printf(" [x] Sent %s", body)
-			failOnError(err, "Failed to publish a message")
+			if deneme[i] == "1530192453" {
+				body = deneme[i]
+				err = ch.Publish(
+					"",           // exchange
+					"time_queue",       // routing key
+					false,        // mandatory
+					false,
+					amqp.Publishing{
+						DeliveryMode: amqp.Persistent,
+						ContentType:  "text/plain",
+						Body:         []byte(body),
+					})
+				failOnError(err, "Failed to publish a message")
+			}else {
+				body = deneme[i]
+				err = ch.Publish(
+					"json_direct",     // exchange
+					"priority", // routing key
+					false,  // mandatory
+					false,  // immediate
+					amqp.Publishing{
+						Headers:         amqp.Table{},
+						ContentType:     "text/plain",
+						ContentEncoding: "",
+						Body:            []byte(body),
+						DeliveryMode:    amqp.Persistent, // 1=non-persistent, 2=persistent
+						Priority:        deneme1[i],
+					})
+				//log.Printf(" [x] Sent %s", body)
+				failOnError(err, "Failed to publish a message")
+			}
+
 		}
 
 	}
