@@ -76,7 +76,7 @@ func main() {
 	defer conn.Close()
 
 	forever := make(chan bool)
-	t := time.Duration(50)
+	t := time.Duration(30)
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
