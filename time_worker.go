@@ -6,6 +6,12 @@ import (
 	"log"
 	"time"
 )
+var y map[string]interface{}
+type I = []interface {}
+type K = map[string]interface {}
+
+
+
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -52,12 +58,12 @@ func main() {
 	failOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
-	t := time.Duration(30)
+	t := time.Duration(1500)
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			log.Printf("\nReceived a message: %s ...\n", d.Body[0:50])
 			time.Sleep(t * time.Millisecond)
-			log.Printf("Done")
+			log.Printf("Done \n")
 			d.Ack(false)
 		}
 	}()
