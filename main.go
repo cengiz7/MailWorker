@@ -8,9 +8,27 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"time"
 )
 
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
+
 func main() {
+	go func() {
+		timeWorker()
+	}()
+	go func() {
+		priorityWorker()
+	}()
+	go func() {
+		httpWorker()
+	}()
+	time.Sleep(time.Duration(2) * time.Second)
 	url := "http://localhost:9000/post"
 	fmt.Println("URL:>", url)
 	mail, err := ioutil.ReadFile("mail_ornekleri.txt")
@@ -20,6 +38,7 @@ func main() {
 	}
 	mailstr := string(mail)
 	mailler := strings.Split(mailstr,"sep-from-here")
+	forever := make(chan bool)
 	for _,bb := range mailler{
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(bb)))
 		req.Header.Set("X-Custom-Header", "myvalue")
@@ -31,11 +50,10 @@ func main() {
 			panic(err)
 		}
 		defer resp.Body.Close()
-
 		fmt.Println("response Status:", resp.Status)
 		fmt.Println("response Headers:", resp.Header)
 		body, _ := ioutil.ReadAll(resp.Body)
 		fmt.Println("response Body:", string(body))
 	}
-
+	<-forever
 }

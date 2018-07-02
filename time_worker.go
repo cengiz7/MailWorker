@@ -1,26 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"github.com/streadway/amqp"
 	"log"
 	"time"
 )
-var y map[string]interface{}
-type I = []interface {}
-type K = map[string]interface {}
 
 
 
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-		panic(fmt.Sprintf("%s: %s", msg, err))
-	}
-}
-
-func main() {
+func timeWorker() {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -58,12 +46,12 @@ func main() {
 	failOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
-	t := time.Duration(1500)
+	t := time.Duration(50)
 	go func() {
 		for d := range msgs {
-			log.Printf("\nReceived a message: %s ...\n", d.Body[0:50])
+			log.Printf("\n\nTime queue >> Received a message: %s ...\n", d.Body[0:50])
 			time.Sleep(t * time.Millisecond)
-			log.Printf("Done \n")
+			log.Printf("Done\n")
 			d.Ack(false)
 		}
 	}()

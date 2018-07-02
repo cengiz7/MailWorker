@@ -5,20 +5,20 @@ import (
 
 	"github.com/streadway/amqp"
 	"time"
+	"os"
 )
 
-var y map[string]interface{}
-type I = []interface {}
-type K = map[string]interface {}
 
 
-func failOnError(err error, msg string) {
+func priorityWorker() {
+	f, err := os.OpenFile("Queue_logs.txt", os.O_RDWR | os.O_CREATE | os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
+		log.Fatalf("error opening file: %v", err)
 	}
-}
+	defer f.Close()
 
-func main() {
+	log.SetOutput(f)
+
 	args := make(amqp.Table)
 	args["x-max-priority"] = int64(2)
 
@@ -60,12 +60,12 @@ func main() {
 	defer conn.Close()
 
 	forever := make(chan bool)
-	t := time.Duration(1500)
+	t := time.Duration(50)
 	go func() {
 		for d := range msgs {
-			log.Printf("\nReceived a message: %s ...\n", d.Body[0:50])
+			log.Printf("\n\nPriority queue >> Received a message: %s ...\n", d.Body[0:50])
 			time.Sleep(t * time.Millisecond)
-			log.Printf("Done  \n")
+			log.Printf("Done\n")
 			d.Ack(false)
 		}
 
