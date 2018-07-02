@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+var y map[string]interface{}
+type I = []interface {}
+type K = map[string]interface {}
+
+
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -23,37 +28,16 @@ func main() {
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 
-	err = ch.ExchangeDeclare(
-		"json_direct", // name
-		"direct",      // type
-		true,          // durable
-		false,         // auto-deleted
-		false,         // internal
-		false,         // no-wait
-		nil,           // arguments
-	)
-	failOnError(err, "Failed to declare an exchange")
-
 
 	q, err := ch.QueueDeclare(
-		"", // name
+		"priority_queue", // name
 		true,   // durable
 		false,   // delete when unused
-		true,   // exclusive
+		false,   // exclusive
 		false,   // no-wait
 		args,     // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
-
-	log.Printf("Binding queue %s to exchange %s with routing key %s",
-		q.Name, "json_direct", "priority")
-	err = ch.QueueBind(
-		q.Name,        // queue name
-		"priority",             // routing key
-		"json_direct", // exchange
-		false,
-		args)
-	failOnError(err, "Failed to bind a queue")
 
 	err = ch.Qos(
 		1,     // prefetch count
@@ -76,11 +60,12 @@ func main() {
 	defer conn.Close()
 
 	forever := make(chan bool)
-	t := time.Duration(30)
+	t := time.Duration(1500)
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			log.Printf("\nReceived a message: %s ...\n", d.Body[0:50])
 			time.Sleep(t * time.Millisecond)
+			log.Printf("Done  \n")
 			d.Ack(false)
 		}
 
