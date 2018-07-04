@@ -9,6 +9,9 @@ import (
 	"encoding/json"
 	"github.com/streadway/amqp"
 	"strconv"
+	"bytes"
+	"time"
+	"math/rand"
 )
 
 var (
@@ -35,7 +38,9 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(ornek)
 }
 
-
+func random(min, max int) int {
+	return rand.Intn(max - min) + min
+}
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
@@ -49,9 +54,10 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		for m :=0 ; m< len(y["mails"].(I)) ; m++{
+		for m :=0 ; m < len(y["mails"].(I)) ; m++{
 			if len(y["mails"].(I)[m].(K)["priority"].(string)) > 1 {
-				println("zaman öncelikli > ",y["mails"].(I)[m].(K)["priority"].(string))
+				body = bytes.Replace(body,[]byte(y["mails"].(I)[m].(K)["priority"].(string)),[]byte(strconv.FormatInt(time.Now().Unix() + int64(random(20,70)) , 10)),-1)
+				//println("zaman öncelikli > ",y["mails"].(I)[m].(K)["priority"].(string))
 				err = ch.Publish(
 					"",           // exchange
 					"time_queue",       // routing key

@@ -3,22 +3,15 @@ package main
 import (
 	"log"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/streadway/amqp"
 	"time"
-	"os"
 )
 
 
 
 func priorityWorker() {
-	f, err := os.OpenFile("Queue_logs.txt", os.O_RDWR | os.O_CREATE | os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-
-	log.SetOutput(f)
-
 	args := make(amqp.Table)
 	args["x-max-priority"] = int64(2)
 
@@ -63,8 +56,9 @@ func priorityWorker() {
 	t := time.Duration(50)
 	go func() {
 		for d := range msgs {
-			log.Printf("\n\nPriority queue >> Received a message: %s ...\n", d.Body[0:50])
+			log.Printf("\n\nPriority queue >>")
 			time.Sleep(t * time.Millisecond)
+			log.Printf(string(d.Body[:60]))
 			log.Printf("Done\n")
 			d.Ack(false)
 		}

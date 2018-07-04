@@ -8,9 +8,9 @@ import (
 	"log"
 	"os"
 	"strings"
-
 	"time"
 )
+var mailchan = make(chan uint)
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -19,15 +19,23 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
+	f, err := os.OpenFile("Queue_logs.txt", os.O_RDWR | os.O_CREATE | os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
+	go func() {
+		httpWorker()
+	}()
 	go func() {
 		timeWorker()
 	}()
 	go func() {
 		priorityWorker()
 	}()
-	go func() {
-		httpWorker()
-	}()
+
 	time.Sleep(time.Duration(2) * time.Second)
 	url := "http://localhost:9000/post"
 	fmt.Println("URL:>", url)
