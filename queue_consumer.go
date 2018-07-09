@@ -14,7 +14,7 @@ func ConsumeFromQueue(){
 		0,     // prefetch size
 		false, // global
 	)
-	FailOnError(err, "Failed to set QoS")
+	LoggingChecking(err, "Failed to set QoS","")
 
 	msgs, err := ch.Consume(
 		priorityQueueName, // queue
@@ -25,7 +25,7 @@ func ConsumeFromQueue(){
 		false,  // no-wait
 		que_args,    // args
 	)
-	FailOnError(err, "Failed to register a consumer")
+	LoggingChecking(err, "Failed to register a consumer","")
 
 	go StartConsume(msgs)
 }
@@ -35,7 +35,7 @@ func ConsumeFromQueue(){
 // |<- means| read only channel
 func StartConsume(msgs <-chan amqp.Delivery){
 	for d := range msgs {
-		if current_driver == "sendgrid"{
+		if currentDriver == "sendgrid"{
 			log.Printf(string(d.Body)+ "\n\n\n")
 			d.Ack(false)
 		}
