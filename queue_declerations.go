@@ -7,14 +7,14 @@ var que_args = make(amqp.Table)
 
 func ConnectAmqp()(*amqp.Connection){
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	FailOnError(err, "Failed to connect to RabbitMQ")
+	LoggingChecking(err, "Failed to connect to RabbitMQ","")
 	return conn
 }
 
 func OpenAmqpChannel()(*amqp.Channel){
 	conn := ConnectAmqp()
 	ch, err := conn.Channel()
-	FailOnError(err, "Failed to open a channel")
+	LoggingChecking(err, "Failed to open a channel","")
 	return ch
 
 }
@@ -30,6 +30,6 @@ func DeclarePriorityQueue(){
 		false,   // no-wait
 		que_args,     // arguments
 	)
-	FailOnError(err, "Failed to declare a queue")
+	LoggingChecking(err, "Failed to declare a queue","")
 	ch.Close()
 }
