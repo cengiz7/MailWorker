@@ -1,0 +1,21 @@
+## Required while consuming messages from queue
+## You can add new drivers. Check it queue_consumer.go > func StartConsume() where messages consuming
+currentDriver=sendgrid
+
+## RabbitMQ queue name
+priorityQueueName=priority_queue
+
+## 0 lowest, 3 is highest prior while consuming from queue. U can set up to 255
+priorityRange=3
+
+## Database check periot (seconds)
+dbCheckPeriot=30
+
+## Database check data between now and passed X seconds
+dbQueryCheckRange=35
+
+## .db Path
+dbPath=includes/pending_mails.db
+
+## log output path
+logPath=includes/logs.log
