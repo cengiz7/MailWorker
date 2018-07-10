@@ -30,6 +30,6 @@ func DeclarePriorityQueue(){
 		false,   // no-wait
 		que_args,     // arguments
 	)
-	LoggingChecking(err, "Failed to declare a queue","Failed to declare "+priorityQueueName+ "on RabbitMQ.",3)
+	LoggingChecking(err, "Failed to declare a queue","Successfully declare "+priorityQueueName+ "on RabbitMQ.",3)
 	ch.Close()
 }
