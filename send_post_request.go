@@ -9,7 +9,7 @@ import (
 	"bytes"
 )
 
-var url = "http://localhost:9000/post"
+var url string
 
 
 func PrintResponseStatus(stat string,head http.Header,body string){
@@ -34,11 +34,12 @@ func MakeRequest(body []byte){
 }
 
 func SendAllMails(){
+	url = "http://localhost:"+httpListenPort+"/post"
 	fmt.Println("URL:>", url)
 	mail, err := ioutil.ReadFile("includes/mail_ornekleri.txt")
 	if err != nil{
 		log.Fatalf("Dosya acilamadi.")
-		os.Exit(1)
+		os.Exit(11)
 	}
 	MakeRequest(mail)
 }

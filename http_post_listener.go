@@ -11,10 +11,6 @@ import (
 	"strconv"
 )
 
-var (
-	flagPort = flag.String("port", "9000", "Port to listen on")
-)
-
 func init() {
 	log.SetFlags(log.Lmicroseconds | log.Lshortfile)
 	flag.Parse()
@@ -44,7 +40,6 @@ func ParseAndPublish(yy map[string]interface{}) error {
 		// then we can say this is a timestamp
 		if int64(p) > priorityRange {
 			err = SaveToDb(p,body)
-			fmt.Println("Veri tabanına kaydedildi")
 		}else {
 			err = PublishOverChannel(body,uint8(p))
 		}
@@ -55,13 +50,14 @@ func ParseAndPublish(yy map[string]interface{}) error {
 
 func SendToPriorityQueue(w *http.ResponseWriter, body []byte){
 	err := json.Unmarshal(body, &y)
-	FailOnError(err,"Unmarshalling error before sending message to priority queue section.")
+	LoggingChecking(err,"Unmarshalling error before sending message to priority queue section.","Message successfully unmarshalled.",2)
 	if err == nil {
 		err = ParseAndPublish(y)
 	}
 	RespondPostRequests(w,err)
 }
 
+// Sends parsed request parts to queue with their priority value
 func PublishOverChannel(body []byte,priority uint8) error {
 	ch := OpenAmqpChannel()
 	err := ch.Publish(
@@ -77,9 +73,11 @@ func PublishOverChannel(body []byte,priority uint8) error {
 			DeliveryMode:    amqp.Persistent,
 			Priority:        priority,
 		})
+	LoggingChecking(err,"While pusblishing message over "+priorityQueueName,"Message succesfully published over "+priorityQueueName,2)
 	return err
 }
 
+// Responds inconming http requests
 func RespondPostRequests(w *http.ResponseWriter,err error){
 	if err != nil {
 		fmt.Fprint(*w, "Error : This message has not been published to queue.")
@@ -89,17 +87,20 @@ func RespondPostRequests(w *http.ResponseWriter,err error){
 	}
 }
 
-
+// Not necessary for now. Not used. Comment in from HttpWorker() if u want
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Custom-Header", "myvalue")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(nil)
 }
+
+// Define http lisen path and function
 func HttpWorker() {
+	var flagPort = flag.String("port", httpListenPort, "Port to listen on")
 	mux := http.NewServeMux()
 	//mux.HandleFunc("/", GetHandler)
 	mux.HandleFunc("/post",PostHandler)
 
-	log.Printf("listening on port %s", *flagPort)
-	log.Fatal(http.ListenAndServe(":"+*flagPort, mux))
+	LoggingChecking(nil,"",fmt.Sprintf("listening on port %s", *flagPort),1)
+	LoggingChecking(http.ListenAndServe(":"+*flagPort, mux),"inside HttpWorker()"," Http listening started",3)
 }

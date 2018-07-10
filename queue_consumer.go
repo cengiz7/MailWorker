@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/streadway/amqp"
-	"log"
 )
 
 func ConsumeFromQueue(){
@@ -14,7 +13,7 @@ func ConsumeFromQueue(){
 		0,     // prefetch size
 		false, // global
 	)
-	LoggingChecking(err, "Failed to set QoS","")
+	LoggingChecking(err, "Failed to set QoS","QoS successfully set for "+priorityQueueName,2)
 
 	msgs, err := ch.Consume(
 		priorityQueueName, // queue
@@ -25,7 +24,7 @@ func ConsumeFromQueue(){
 		false,  // no-wait
 		que_args,    // args
 	)
-	LoggingChecking(err, "Failed to register a consumer","")
+	LoggingChecking(err, "Failed to register a consumer","Consumer successfully set for "+priorityQueueName,2)
 
 	go StartConsume(msgs)
 }
@@ -34,9 +33,10 @@ func ConsumeFromQueue(){
 // using <-chan rather that chan amqp... is important
 // |<- means| read only channel
 func StartConsume(msgs <-chan amqp.Delivery){
+	LoggingChecking(nil,"","Queue consuming started..",1)
 	for d := range msgs {
 		if currentDriver == "sendgrid"{
-			log.Printf(string(d.Body)+ "\n\n\n")
+			LoggingChecking(nil,"",string(d.Body[:55])+ "\n\n\n",1)
 			d.Ack(false)
 		}
 

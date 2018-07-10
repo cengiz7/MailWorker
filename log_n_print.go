@@ -5,25 +5,34 @@ import (
 	"os"
 )
 
-// if you want  to append new logs to the existing log file, change the secon os.O_CREATE with os.RWONLY
 func CreateLogFile(){
-	f, err := os.OpenFile(logPath, os.O_RDWR | os.O_CREATE | os.O_CREATE, 0666)
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	log.SetOutput(f)
 }
 
-
-// if you don't want to log succesfull processes, then leave the sccsmsg field while calling the FailOnError func.
-func LoggingChecking(err error, errmsg string,sccsmsg string) bool {
-	if err != nil {
-		log.Fatalf("%s: %s", errmsg, err)
-		return true
-	} else {
-		if sccsmsg != ""{
-			log.Printf("%s",sccsmsg)
+// ..LOG LEVELS..
+//----------------
+// debug > level 0
+// info  > level 1
+// error > level 2
+// fatal > level 3
+//
+func LoggingChecking(err error, errmsg string,sccsmsg string,level uint8) bool {
+	if level >= logginLevel {
+		if err != nil {
+			log.Fatalf("%s: %s", errmsg, err)
+			return true
+		} else {
+			if sccsmsg != "" && (logginLevel <= 1 ) {
+				log.Printf("%s",sccsmsg)
+			}
+			return false
 		}
+	}else {
+		if err !=nil {return true}
 		return false
 	}
 }

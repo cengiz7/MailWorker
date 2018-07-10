@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"bufio"
 	"strings"
 	"regexp"
@@ -18,13 +17,16 @@ type K = map[string]interface {}
 var (
 	configFile = "includes/config.txt"
 	currentDriver string   // required while consuming messages from queue
+	rabbitMqConnection string
 	priorityQueueName string
 	priorityRange int64  // 0 lowest 3 is highest pri.
 	// dbcheckperiot should not be higher than checkrange
 	dbCheckPeriot int   // seconds
 	dbQueryCheckRange int // seconds
 	dbPath string
-	logPath string
+	logPath = "includes/logs.log"
+	logginLevel uint8
+	httpListenPort string
 	y map[string]interface{}
 	config map[string]string
 )
@@ -43,7 +45,10 @@ func main(){
 	<-ch
 }
 
+// go calls init() func before everything.
 func init(){
+	CreateLogFile()
+
 	// parse includes/config.txt into a map
 	//
 	// format of includes/config.txt:
@@ -54,25 +59,34 @@ func init(){
 	//
 	config = ReadConfig(configFile)
 	dbPath = config["dbPath"]
+	rabbitMqConnection = config["rabbitMqConnection"]
 	currentDriver = config["currentDriver"]
+	httpListenPort = config["httpListenPort"]
 	priorityQueueName = config["priorityQueueName"]
-	logPath = config["logPath"]
-	var err error
+	lv, err := strconv.Atoi(config["loggingLevel"])
+	if LoggingChecking(err,"Couldn't read loggingLevel in config.txt","",3){
+		os.Exit(1)
+	}
+	logginLevel = uint8(lv)
 	priorityRange, err = strconv.ParseInt(config["priorityRange"], 10, 64)
-	LoggingChecking(err,"Error while parsing priorityRange from config.txt","")
+	if LoggingChecking(err,"Couldn't read priorityRange in config.txt","",3){
+		os.Exit(2)
+	}
 	dbCheckPeriot,err = strconv.Atoi(config["dbCheckPeriot"])
-	LoggingChecking(err,"Error while parsing dbCheckPeriot from config.txt","")
+	if LoggingChecking(err,"Couldn't read dbCheckPeriot in config.txt","",3) {
+		os.Exit(3)
+	}
 	dbQueryCheckRange, err = strconv.Atoi(config["dbQueryCheckRange"])
-	LoggingChecking(err,"Error while parsing dbQueryCheckRange from config.txt","")
-
-	CreateLogFile()
+	if LoggingChecking(err,"Couldn't read dbQueryCheckRange in config.txt","",3) {
+		os.Exit(4)
+	}
 }
 
 func ReadConfig(filename_fullpath string) map[string]string {
 	prg := "ReadConfig()"
 	file, err := os.Open(filename_fullpath)
-	if LoggingChecking(err,fmt.Sprintf("%s: os.Open(): %s\n", prg, err)," Config file opened."){
-		os.Exit(1)
+	if LoggingChecking(err,fmt.Sprintf("%s: os.Open(): %s\n", prg, err)," Config file opened.",3){
+		os.Exit(5)
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -89,19 +103,18 @@ func ScanFile(scanner *bufio.Scanner) (map[string]string) {
 		line := scanner.Text()
 		if strings.Contains(line, "=") == true {
 			re, err := regexp.Compile(`([^=]+)=(.*)`)
-			if LoggingChecking(err,fmt.Sprintf("%s: regexp.Compile(): error=%s",prg, err),"") {
-				os.Exit(1)
+			if LoggingChecking(err,fmt.Sprintf("%s: regexp.Compile(): error=%s",prg, err),"",2) {
 			} else {
 				confOption := re.FindStringSubmatch(line)[1]
 				confValue := re.FindStringSubmatch(line)[2]
 				options[confOption] = confValue
-				log.Printf("%s: out[]: %s ... confOption=%s, confValue=%s\n",prg,line,confOption,confValue)
+				LoggingChecking(nil,"",fmt.Sprintf("%s: Config Option = %-18s, Config Value = %-18s\n",prg,confOption,confValue),0)
 			}
 		}
 	}
-	log.Printf("%s: options[]: %+v\n", prg, options)
-	if LoggingChecking(scanner.Err(),fmt.Sprintf("%s: scanner.Err(): %s\n", prg, scanner.Err()),""){
-		os.Exit(1)
+	//LoggingChecking(nil,"",fmt.Sprintf("%s: options[]: %+v\n", prg, options),0)
+	if LoggingChecking(scanner.Err(),fmt.Sprintf("%s: scanner.Err(): %s\n", prg, scanner.Err()),"",3){
+		os.Exit(6)
 	}
 	return options
 }
