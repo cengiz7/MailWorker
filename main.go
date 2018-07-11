@@ -37,10 +37,7 @@ func main(){
 	go HttpWorker()
 	go ConsumeFromDb()
 	ConsumeFromQueue()
-
-	for i := 0 ; i< 10; i++{
-		SendAllMails()
-	}
+	fmt.Println("Program successfully started...")
 	ch := make(chan bool)
 	<-ch
 }
