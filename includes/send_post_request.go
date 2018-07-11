@@ -42,7 +42,7 @@ func MakeRequest(body []byte){
 
 func SendAllMails(){
 	fmt.Println("URL:>", url)
-	mail, err := ioutil.ReadFile("includes/mail_ornekleri.txt")
+	mail, err := ioutil.ReadFile("mail_ornekleri.txt")
 	if err != nil{
 		log.Fatalf("Dosya acilamadi.")
 		os.Exit(11)
