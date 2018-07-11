@@ -29,7 +29,8 @@ To use sample POST request sender and see if it works, get in the _includes_ sub
   func main() {
   	request := sendgrid.GetRequest("SENDGRID-API-KEY-HERE", "/v3/mail/send", "https://api.sendgrid.com")
   	request.Method = "POST"
-  	request.Body = []byte(\`{
+  	request.Body = []byte(
+  `{
     "personalizations": [
       {
         "to": [
@@ -63,8 +64,7 @@ To use sample POST request sender and see if it works, get in the _includes_ sub
         "contentId": "mytext"
       }
     ]
-  }
-  \`)
+  }`)
   	response, err := sendgrid.API(request)
   	if err != nil {
   		log.Println(err)
