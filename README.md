@@ -10,7 +10,7 @@ Sample json format is given at the mail_ornekleri.txt. In this format, it's poss
 To use sample POST request sender and see if it works, get in the _includes_ subfolder and call it with url arg
 **Example use:**  `go run send_post_request.go http://localhost:9000/post`
 
-####**Notes:** 
+#### **Notes:** 
 - Make sure RabbitMQ server is up and config.txt file is under ./includes/ directory.
 - Dont use whitespace while editing config file.  \(Correct: option=value  , Wrong: **_option = value_** \)
 - Current json format sat for **Sendgrid** api. \(simple example is right below.\)
