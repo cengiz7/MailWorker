@@ -1,16 +1,23 @@
 package main
 
 import (
+	"net/http"
 	"fmt"
+	"bytes"
 	"io/ioutil"
 	"log"
 	"os"
-	"net/http"
-	"bytes"
 )
 
 var url string
 
+
+func main(){
+	url = os.Args[1]
+	for i:=0;i<5;i++{
+	SendAllMails()
+	}
+}
 
 func PrintResponseStatus(stat string,head http.Header,body string){
 	fmt.Println("response Status:", stat)
@@ -34,7 +41,6 @@ func MakeRequest(body []byte){
 }
 
 func SendAllMails(){
-	url = "http://localhost:"+httpListenPort+"/post"
 	fmt.Println("URL:>", url)
 	mail, err := ioutil.ReadFile("includes/mail_ornekleri.txt")
 	if err != nil{
