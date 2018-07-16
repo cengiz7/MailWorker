@@ -80,7 +80,7 @@ func DeleteFromDb(ids []uint64,where string) error {
 	return nil
 }
 
-// calculating delay time and abstract it from dbCheckPeriot time
+// calculating delay time and subtract the value from dbCheckPeriot time
 func diff(strt,fnsh int64) int{
 	if dbQueryCheckRange < dbCheckPeriot {
 		log.Fatalf("dbQueryCheckRange can't be Equal or Lower than query check range!\n Fix it under config.txt file. ")
